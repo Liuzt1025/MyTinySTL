@@ -21,9 +21,9 @@ namespace mystl
 // construct 构造对象
 
 template <class Ty>
-void construct(Ty* ptr)
+void construct(Ty* ptr)	// ptr是指定地址
 {
-  ::new ((void*)ptr) Ty();
+  ::new ((void*)ptr) Ty();	// placement new， ()表示默认构造
 }
 
 template <class Ty1, class Ty2>
@@ -35,13 +35,13 @@ void construct(Ty1* ptr, const Ty2& value)
 template <class Ty, class... Args>
 void construct(Ty* ptr, Args&&... args)
 {
-  ::new ((void*)ptr) Ty(mystl::forward<Args>(args)...);
+  ::new ((void*)ptr) Ty(mystl::forward<Args>(args)...);	// 要求这个类一定要有移动构造函数
 }
 
 // destroy 将对象析构
 
 template <class Ty>
-void destroy_one(Ty*, std::true_type) {}
+void destroy_one(Ty*, std::true_type) {}	// 为什么这个啥都不干？
 
 template <class Ty>
 void destroy_one(Ty* pointer, std::false_type)
@@ -52,6 +52,7 @@ void destroy_one(Ty* pointer, std::false_type)
   }
 }
 
+// 如果是可破坏的类型，那么就破坏
 template <class ForwardIter>
 void destroy_cat(ForwardIter , ForwardIter , std::true_type) {}
 

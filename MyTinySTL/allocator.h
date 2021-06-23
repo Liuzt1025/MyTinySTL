@@ -21,7 +21,7 @@ public:
   typedef T&           reference;
   typedef const T&     const_reference;
   typedef size_t       size_type;
-  typedef ptrdiff_t    difference_type;
+  typedef ptrdiff_t    difference_type;	// 一般这个类型是干什么的？
 
 public:
   static T*   allocate();
@@ -41,12 +41,14 @@ public:
   static void destroy(T* first, T* last);
 };
 
+// 创建一个T类型的空间，并且转换类型
 template <class T>
 T* allocator<T>::allocate()
 {
-  return static_cast<T*>(::operator new(sizeof(T)));
+  return static_cast<T*>(::operator new(sizeof(T)));	// operator new是一个重载
 }
 
+// 创建n个T类型的空间，并且转换类型
 template <class T>
 T* allocator<T>::allocate(size_type n)
 {
@@ -60,7 +62,7 @@ void allocator<T>::deallocate(T* ptr)
 {
   if (ptr == nullptr)
     return;
-  ::operator delete(ptr);
+  ::operator delete(ptr);		// 这个应该就是实现了c的free
 }
 
 template <class T>
@@ -68,27 +70,30 @@ void allocator<T>::deallocate(T* ptr, size_type /*size*/)
 {
   if (ptr == nullptr)
     return;
-  ::operator delete(ptr);
+  ::operator delete(ptr);		// 现在这个地方为什么是这样的？为什么free不需要指定大小呢？
 }
 
 template <class T>
 void allocator<T>::construct(T* ptr)
 {
-  mystl::construct(ptr);
+  mystl::construct(ptr);		// 这个就跳转到那边去了
 }
 
+// 根据value的值创建Ptr
 template <class T>
 void allocator<T>::construct(T* ptr, const T& value)
 {
   mystl::construct(ptr, value);
 }
 
+// 这个应该是需要移动构造了
 template <class T>
  void allocator<T>::construct(T* ptr, T&& value)
 {
-  mystl::construct(ptr, mystl::move(value));
+  mystl::construct(ptr, mystl::move(value));	// std::move的作用是将一个左值强制转化为一个右值
 }
 
+ // 完美转发
 template <class T>
 template <class ...Args>
  void allocator<T>::construct(T* ptr, Args&& ...args)

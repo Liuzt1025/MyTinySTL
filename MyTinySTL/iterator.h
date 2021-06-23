@@ -11,14 +11,15 @@ namespace mystl
 {
 
 // 五种迭代器类型
-struct input_iterator_tag {};
-struct output_iterator_tag {};
-struct forward_iterator_tag : public input_iterator_tag {};
-struct bidirectional_iterator_tag : public forward_iterator_tag {};
-struct random_access_iterator_tag : public bidirectional_iterator_tag {};
+struct input_iterator_tag {};	// 可读可写
+struct output_iterator_tag {};	// 只读
+struct forward_iterator_tag : public input_iterator_tag {};		// 单向迭代器
+struct bidirectional_iterator_tag : public forward_iterator_tag {};		// 双向迭代器
+struct random_access_iterator_tag : public bidirectional_iterator_tag {};	// 随机访问迭代器
+// 为什么不定义？
 
 // iterator 模板
-template <class Category, class T, class Distance = ptrdiff_t,
+template <class Category, class T, class Distance = ptrdiff_t,	// 这个东西哪里来的？
   class Pointer = T*, class Reference = T&>
   struct iterator
 {
