@@ -34,7 +34,7 @@ struct pair;
 // --- forward declaration end
 
 template <class T>
-struct is_pair : mystl::m_false_type {};
+struct is_pair : mystl::m_false_type {};	// 继承了之后可以通过is_pair::value查询是否为pair
 
 template <class T1, class T2>
 struct is_pair<mystl::pair<T1, T2>> : mystl::m_true_type {};

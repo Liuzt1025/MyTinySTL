@@ -29,7 +29,7 @@ T&& forward(typename std::remove_reference<T>::type& arg) noexcept
 template <class T>
 T&& forward(typename std::remove_reference<T>::type&& arg) noexcept
 {
-  static_assert(!std::is_lvalue_reference<T>::value, "bad forward");
+  static_assert(!std::is_lvalue_reference<T>::value, "bad forward");	// std::is_lvalue_reference 这个是什么东西？
   return static_cast<T&&>(arg);
 }
 
@@ -39,7 +39,7 @@ template <class Tp>
 void swap(Tp& lhs, Tp& rhs)
 {
   auto tmp(mystl::move(lhs));
-  lhs = mystl::move(rhs);
+  lhs = mystl::move(rhs);		// 这个地方为什么需要使用右值引用？如果是普通类型或者左值，那么相当与拷贝， 如果是右值此举有利于提高效率
   rhs = mystl::move(tmp);
 }
 
@@ -51,7 +51,7 @@ ForwardIter2 swap_range(ForwardIter1 first1, ForwardIter1 last1, ForwardIter2 fi
   return first2;
 }
 
-template <class Tp, size_t N>
+template <class Tp, size_t N>		// 模板好像是提供了这个东西， 什么情况调用这个模板？
 void swap(Tp(&a)[N], Tp(&b)[N])
 {
   mystl::swap_range(a, a + N, b);
@@ -74,10 +74,10 @@ struct pair
 
   // default constructiable
   template <class Other1 = Ty1, class Other2 = Ty2,
-    typename = typename std::enable_if<
+    typename = typename std::enable_if<								// enable_if: 第一个参数有效的时候才有定义，否则编译错误
     std::is_default_constructible<Other1>::value &&
-    std::is_default_constructible<Other2>::value, void>::type>
-    constexpr pair()
+    std::is_default_constructible<Other2>::value, void>::type>		// is_default_constructible: 测试类型是否具有默认构造函数
+    constexpr pair()												// 常量表达式是什么意思？
     : first(), second()
   {
   }
@@ -88,26 +88,26 @@ struct pair
     std::is_copy_constructible<U1>::value &&
     std::is_copy_constructible<U2>::value &&
     std::is_convertible<const U1&, Ty1>::value &&
-    std::is_convertible<const U2&, Ty2>::value, int>::type = 0>
+    std::is_convertible<const U2&, Ty2>::value, int>::type = 0>			// 在模板符号里面给一个typename赋值会怎么样？
     constexpr pair(const Ty1& a, const Ty2& b)
     : first(a), second(b)
   {
   }
 
   // explicit constructible for this type
-  template <class U1 = Ty1, class U2 = Ty2,
+  template <class U1 = Ty1, class U2 = Ty2,									// 逻辑：如果不能转化，这个函数被编译出来， 反之，报错
     typename std::enable_if<
     std::is_copy_constructible<U1>::value &&
-    std::is_copy_constructible<U2>::value &&
-    (!std::is_convertible<const U1&, Ty1>::value ||
+    std::is_copy_constructible<U2>::value &&								// is_convertible<A, B> 判断A是否可以转化为B
+    (!std::is_convertible<const U1&, Ty1>::value ||							// is_convertible是为了干什么？
      !std::is_convertible<const U2&, Ty2>::value), int>::type = 0>
-    explicit constexpr pair(const Ty1& a, const Ty2& b)
+    explicit constexpr pair(const Ty1& a, const Ty2& b)						// constexpr是什么意思？
     : first(a), second(b)
   {
   }
 
   pair(const pair& rhs) = default;
-  pair(pair&& rhs) = default;
+  pair(pair&& rhs) = default;				// 都设置为默认编译器都会合成吗？
 
   // implicit constructiable for other type
   template <class Other1, class Other2,
@@ -199,11 +199,11 @@ struct pair
   }
 
   // move assign for this pair
-  pair& operator=(pair&& rhs)
+  pair& operator=(pair&& rhs)			//这个还是和普通的一样的吧？
   {
     if (this != &rhs)
     {
-      first = mystl::move(rhs.first);
+      first = mystl::move(rhs.first);		// 转化为右值有什么用处吗？这个就依靠first这个类型里面实现的移动操作了
       second = mystl::move(rhs.second);
     }
     return *this;
@@ -240,6 +240,7 @@ struct pair
 
 };
 
+// pair的比较规则： 字典序
 // 重载比较操作符 
 template <class Ty1, class Ty2>
 bool operator==(const pair<Ty1, Ty2>& lhs, const pair<Ty1, Ty2>& rhs)
@@ -278,7 +279,7 @@ bool operator>=(const pair<Ty1, Ty2>& lhs, const pair<Ty1, Ty2>& rhs)
 }
 
 // 重载 mystl 的 swap
-template <class Ty1, class Ty2>
+template <class Ty1, class Ty2>		// 这些函数是以友元的身份存在的吗？
 void swap(pair<Ty1, Ty2>& lhs, pair<Ty1, Ty2>& rhs)
 {
   lhs.swap(rhs);
@@ -291,7 +292,7 @@ pair<Ty1, Ty2> make_pair(Ty1&& first, Ty2&& second)
   return pair<Ty1, Ty2>(mystl::forward<Ty1>(first), mystl::forward<Ty2>(second));
 }
 
-}
+}	// endif mystl
 
 #endif // !MYTINYSTL_UTIL_H_
 

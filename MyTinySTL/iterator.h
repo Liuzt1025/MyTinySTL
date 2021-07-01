@@ -40,12 +40,14 @@ private:
   template <class U> static two test(...);
   template <class U> static char test(typename U::iterator_category* = 0);
 public:
-  static const bool value = sizeof(test<T>(0)) == sizeof(char);
+  static const bool value = sizeof(test<T>(0)) == sizeof(char);	// 就是如果是五种类型中的一个，那么就为true 反过来就是false
 };
 
+// 原生类型继承这个
 template <class Iterator, bool>
 struct iterator_traits_impl {};
 
+// 迭代器类型继承这个
 template <class Iterator>
 struct iterator_traits_impl<Iterator, true>
 {
@@ -59,11 +61,12 @@ struct iterator_traits_impl<Iterator, true>
 template <class Iterator, bool>
 struct iterator_traits_helper {};
 
+// 这个要更加特化一点，如果判断结果为false 肯定是要调用下面的这个iterator_traits_impl
 template <class Iterator>
 struct iterator_traits_helper<Iterator, true>
   : public iterator_traits_impl<Iterator,
   std::is_convertible<typename Iterator::iterator_category, input_iterator_tag>::value ||
-  std::is_convertible<typename Iterator::iterator_category, output_iterator_tag>::value>
+  std::is_convertible<typename Iterator::iterator_category, output_iterator_tag>::value>		// 子类可以转化为基类 这个判断output_iterator_tag是否可以转换为Iterator
 {
 };
 
@@ -93,6 +96,7 @@ struct iterator_traits<const T*>
   typedef ptrdiff_t                            difference_type;
 };
 
+// 这个地方继承一个m_bool_constant类型干嘛？可以找到其的value
 template <class T, class U, bool = has_iterator_cat<iterator_traits<T>>::value>
 struct has_iterator_cat_of
   : public m_bool_constant<std::is_convertible<
@@ -102,8 +106,9 @@ struct has_iterator_cat_of
 
 // 萃取某种迭代器
 template <class T, class U>
-struct has_iterator_cat_of<T, U, false> : public m_false_type {};
+struct has_iterator_cat_of<T, U, false> : public m_false_type {};		// 如果has_iterator_cat为false，那么就调用这个特化版本
 
+// 派生类可以转化为基类
 template <class Iter>
 struct is_input_iterator : public has_iterator_cat_of<Iter, input_iterator_tag> {};
 
@@ -120,7 +125,7 @@ template <class Iter>
 struct is_random_access_iterator : public has_iterator_cat_of<Iter, random_access_iterator_tag> {};
 
 template <class Iterator>
-struct is_iterator :
+struct is_iterator :			// 这个函数用来判断是否是迭代器类型
   public m_bool_constant<is_input_iterator<Iterator>::value ||
     is_output_iterator<Iterator>::value>
 {
@@ -216,6 +221,7 @@ void advance(InputIterator& i, Distance n)
   advance_dispatch(i, n, iterator_category(i));
 }
 
+// 为什么没有迭代器的模板呢？
 /*****************************************************************************************/
 
 // 模板类 : reverse_iterator
@@ -234,7 +240,7 @@ public:
   typedef typename iterator_traits<Iterator>::pointer           pointer;
   typedef typename iterator_traits<Iterator>::reference         reference;
 
-  typedef Iterator                                              iterator_type;
+  typedef Iterator                                              iterator_type;	//这个是什么意思？
   typedef reverse_iterator<Iterator>                            self;
 
 public:
@@ -252,7 +258,7 @@ public:
   reference operator*() const
   { // 实际对应正向迭代器的前一个位置
     auto tmp = current;
-    return *--tmp;
+    return *--tmp;		// 防止越界riter: [-1, end_idx] iter:[0, end_idx+1]
   }
   pointer operator->() const
   {

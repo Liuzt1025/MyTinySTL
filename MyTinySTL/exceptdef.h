@@ -7,7 +7,7 @@
 
 namespace mystl
 {
-
+	//这个是动态断言
 #define MYSTL_DEBUG(expr) \
   assert(expr)  
 
